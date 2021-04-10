@@ -160,7 +160,6 @@ func TestExtractPrices(t *testing.T) {
 		fundList []gamco.Fund
 		want     map[string]string
 	}{
-
 		"two funds": {
 			fundList: fl,
 			want:     map[string]string{"GUT": fl[0].NAV, "GGT": fl[1].NAV},
@@ -179,6 +178,38 @@ func TestExtractPrices(t *testing.T) {
 				}
 			}
 
+		})
+	}
+}
+
+func TestGetPremium(t *testing.T) {
+	tests := map[string]struct {
+		price string
+		nav   string
+		want  int
+	}{
+		"underpriced": {
+			price: "1.00",
+			nav:   "1.20",
+			want:  20,
+		},
+		"overpriced": {
+			price: "1.00",
+			nav:   "0.80",
+			want:  -20,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			got, err := getDiscount(tt.price, tt.nav)
+			if err != nil {
+				t.Fatalf("%s: %s", name, err)
+			}
+
+			if got != tt.want {
+				t.Errorf("%s: got %v, want %v", name, got, tt.want)
+			}
 		})
 	}
 }
