@@ -73,3 +73,36 @@ func getDiscount(nav string, price string) (int, error) {
 	discount = int(math.Round(discountFloat))
 	return discount, err
 }
+
+type Stock struct {
+	Symbol   string
+	NAV      string
+	Price    string
+	Discount int
+}
+
+// getDiscounts returns a list of Stocks trading a discount relative to
+// their NAV.
+func getDiscounts(navs map[string]string, prices map[string]string) ([]Stock, error) {
+	discountList := []Stock{}
+
+	for k, v := range navs {
+		p := prices[k]
+		d, err := getDiscount(v, p)
+		if err != nil {
+			return discountList, err
+		}
+
+		if d >= 10 {
+			s := Stock{
+				Symbol:   k,
+				NAV:      v,
+				Price:    p,
+				Discount: d,
+			}
+			discountList = append(discountList, s)
+		}
+	}
+
+	return discountList, nil
+}

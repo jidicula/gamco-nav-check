@@ -213,3 +213,46 @@ func TestGetDiscount(t *testing.T) {
 		})
 	}
 }
+
+func TestComparePriceNAVMaps(t *testing.T) {
+	tests := map[string]struct {
+		navMap   map[string]string
+		priceMap map[string]string
+		want     []Stock
+	}{
+		"1 underpriced": {
+			navMap:   map[string]string{"GUT": "1.20"},
+			priceMap: map[string]string{"GUT": "1.00"},
+			want: []Stock{{
+				Symbol:   "GUT",
+				NAV:      "1.20",
+				Price:    "1.00",
+				Discount: 20,
+			}},
+		},
+		"1 overpriced": {
+			navMap:   map[string]string{"GUT": "0.80"},
+			priceMap: map[string]string{"GUT": "1.00"},
+			want:     []Stock{},
+		},
+		"2 overpriced": {
+			navMap:   map[string]string{"GUT": "0.80", "GGT": "0.80"},
+			priceMap: map[string]string{"GUT": "1.00", "GGT": "1.00"},
+			want:     []Stock{},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			got, err := getDiscounts(tt.navMap, tt.priceMap)
+			if err != nil {
+				t.Fatalf("%s: %s", name, err)
+			}
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("%s: got %v, want %v", name, got, tt.want)
+			}
+		})
+	}
+
+}
