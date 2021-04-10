@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"math"
 	"math/big"
 
@@ -11,7 +12,21 @@ import (
 )
 
 func main() {
-	fmt.Println("Hello, world!")
+	funds, err := gamco.GetCommonFundList()
+	if err != nil {
+		log.Fatalf("%s", err)
+	}
+
+	navs := extractNAVs(funds)
+	prices, err := extractPrices(funds)
+	if err != nil {
+		log.Fatalf("%s", err)
+	}
+	discounts, err := getDiscounts(navs, prices)
+	if err != nil {
+		log.Fatalf("%s", err)
+	}
+	fmt.Println(discounts)
 }
 
 // getNAVs returns a map of NAVs for each GAMCO common stock.
@@ -65,10 +80,7 @@ func getDiscount(nav string, price string) (int, error) {
 	discountPercent := new(big.Rat)
 	discountPercent.Mul(discountProportion, big.NewRat(100, 1))
 
-	discountFloat, ok := discountPercent.Float64()
-	if !ok {
-		return discount, fmt.Errorf("Could not convert discount to float: %v", discountFloat)
-	}
+	discountFloat, _ := discountPercent.Float64()
 
 	discount = int(math.Round(discountFloat))
 	return discount, err
