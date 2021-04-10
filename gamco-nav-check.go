@@ -40,7 +40,7 @@ func extractPrices(fl []gamco.Fund) (map[string]string, error) {
 }
 
 // getDiscount returns the rounded price discount: (NAV/price - 1) * 100.
-func getDiscount(price string, nav string) (int, error) {
+func getDiscount(nav string, price string) (int, error) {
 	var err error
 	var discount int
 	p := new(big.Rat)

@@ -182,7 +182,7 @@ func TestExtractPrices(t *testing.T) {
 	}
 }
 
-func TestGetPremium(t *testing.T) {
+func TestGetDiscount(t *testing.T) {
 	tests := map[string]struct {
 		price string
 		nav   string
@@ -202,7 +202,7 @@ func TestGetPremium(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			got, err := getDiscount(tt.price, tt.nav)
+			got, err := getDiscount(tt.nav, tt.price)
 			if err != nil {
 				t.Fatalf("%s: %s", name, err)
 			}
