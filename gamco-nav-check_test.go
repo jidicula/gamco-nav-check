@@ -34,7 +34,7 @@ func dateSetup(priceDate string, inceptionDate string, lastMonthEnd string, last
 
 var datesMap, _ = dateSetup("2021-04-01T00:00:00.000Z", "1999-07-09T00:00:00.000Z", "03/31/2021", "03/31/2021")
 var fl = []gamco.Fund{
-	gamco.Fund{
+	{
 		ID:                   515,
 		FundCode:             -113,
 		SecurityID:           "36240A101",
@@ -83,7 +83,7 @@ var fl = []gamco.Fund{
 		LastMonthEnd:         datesMap["lastMonthEnd"],
 		LastQtrEnd2:          datesMap["lastQtrEnd"],
 	},
-	gamco.Fund{
+	{
 		ID:                   515,
 		FundCode:             -113,
 		SecurityID:           "36240A101",
@@ -160,7 +160,6 @@ func TestExtractPrices(t *testing.T) {
 		fundList []gamco.Fund
 		want     map[string]string
 	}{
-
 		"two funds": {
 			fundList: fl,
 			want:     map[string]string{"GUT": fl[0].NAV, "GGT": fl[1].NAV},
@@ -181,4 +180,79 @@ func TestExtractPrices(t *testing.T) {
 
 		})
 	}
+}
+
+func TestGetDiscount(t *testing.T) {
+	tests := map[string]struct {
+		price string
+		nav   string
+		want  int
+	}{
+		"underpriced": {
+			price: "1.00",
+			nav:   "1.20",
+			want:  20,
+		},
+		"overpriced": {
+			price: "1.00",
+			nav:   "0.80",
+			want:  -20,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			got, err := getDiscount(tt.nav, tt.price)
+			if err != nil {
+				t.Fatalf("%s: %s", name, err)
+			}
+
+			if got != tt.want {
+				t.Errorf("%s: got %v, want %v", name, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestComparePriceNAVMaps(t *testing.T) {
+	tests := map[string]struct {
+		navMap   map[string]string
+		priceMap map[string]string
+		want     []Stock
+	}{
+		"1 underpriced": {
+			navMap:   map[string]string{"GUT": "1.20"},
+			priceMap: map[string]string{"GUT": "1.00"},
+			want: []Stock{{
+				Symbol:   "GUT",
+				NAV:      "1.20",
+				Price:    "1.00",
+				Discount: 20,
+			}},
+		},
+		"1 overpriced": {
+			navMap:   map[string]string{"GUT": "0.80"},
+			priceMap: map[string]string{"GUT": "1.00"},
+			want:     []Stock{},
+		},
+		"2 overpriced": {
+			navMap:   map[string]string{"GUT": "0.80", "GGT": "0.80"},
+			priceMap: map[string]string{"GUT": "1.00", "GGT": "1.00"},
+			want:     []Stock{},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			got, err := getDiscounts(tt.navMap, tt.priceMap)
+			if err != nil {
+				t.Fatalf("%s: %s", name, err)
+			}
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("%s: got %v, want %v", name, got, tt.want)
+			}
+		})
+	}
+
 }
