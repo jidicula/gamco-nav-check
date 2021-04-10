@@ -154,3 +154,31 @@ func TestExtractNAVs(t *testing.T) {
 		})
 	}
 }
+
+func TestExtractPrices(t *testing.T) {
+	tests := map[string]struct {
+		fundList []gamco.Fund
+		want     map[string]string
+	}{
+
+		"two funds": {
+			fundList: fl,
+			want:     map[string]string{"GUT": fl[0].NAV, "GGT": fl[1].NAV},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			got, err := extractPrices(tt.fundList)
+			if err != nil {
+				t.Fatalf("%s: %s", name, err)
+			}
+			for _, v := range tt.fundList {
+				_, ok := got[v.Symbol]
+				if !ok {
+					t.Errorf("%s: unable to get price for %s", name, v.Symbol)
+				}
+			}
+
+		})
+	}
+}
