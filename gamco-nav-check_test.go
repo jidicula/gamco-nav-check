@@ -34,7 +34,7 @@ func dateSetup(priceDate string, inceptionDate string, lastMonthEnd string, last
 
 var datesMap, _ = dateSetup("2021-04-01T00:00:00.000Z", "1999-07-09T00:00:00.000Z", "03/31/2021", "03/31/2021")
 var fl = []gamco.Fund{
-	gamco.Fund{
+	{
 		ID:                   515,
 		FundCode:             -113,
 		SecurityID:           "36240A101",
@@ -83,7 +83,7 @@ var fl = []gamco.Fund{
 		LastMonthEnd:         datesMap["lastMonthEnd"],
 		LastQtrEnd2:          datesMap["lastQtrEnd"],
 	},
-	gamco.Fund{
+	{
 		ID:                   515,
 		FundCode:             -113,
 		SecurityID:           "36240A101",
