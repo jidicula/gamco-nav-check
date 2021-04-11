@@ -1,4 +1,4 @@
-module gamco-nav-check
+module github.com/jidicula/gamco-nav-check
 
 go 1.16
 
