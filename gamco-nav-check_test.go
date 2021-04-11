@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -251,6 +252,61 @@ func TestComparePriceNAVMaps(t *testing.T) {
 
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("%s: got %v, want %v", name, got, tt.want)
+			}
+		})
+	}
+
+}
+
+func TestDumpOutput(t *testing.T) {
+	today := time.Now()
+	todayDate := today.Format("2006-01-02")
+	tests := map[string]struct {
+		stockList []Stock
+		date      time.Time
+		want      string
+	}{
+		"0 stocks": {
+			stockList: []Stock{},
+			date:      today,
+			want:      "",
+		},
+		"1 stock": {
+			stockList: []Stock{{
+				Symbol:   "GUT",
+				NAV:      "1.20",
+				Price:    "1.00",
+				Discount: 20,
+			}},
+			date: today,
+			want: fmt.Sprintf("/tmp/GAMCO_%s.html", todayDate),
+		},
+		"2 stocks": {
+			stockList: []Stock{{
+				Symbol:   "GUT",
+				NAV:      "1.20",
+				Price:    "1.00",
+				Discount: 20,
+			}, {
+				Symbol:   "GGT",
+				NAV:      "2.20",
+				Price:    "2.00",
+				Discount: 10,
+			}},
+			date: today,
+			want: fmt.Sprintf("/tmp/GAMCO_%s.html", todayDate),
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			got, err := dumpOutput(tt.stockList, tt.date)
+			if err != nil {
+				t.Fatalf("%s: %s", name, err)
+			}
+
+			if got != tt.want {
+				t.Errorf("%s: got %s, want %s", name, got, tt.want)
 			}
 		})
 	}
