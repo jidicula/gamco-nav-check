@@ -6,6 +6,8 @@ import (
 	"log"
 	"math"
 	"math/big"
+	"os"
+	"time"
 
 	"github.com/jidicula/go-gamco"
 	"github.com/tonymackay/go-yahoo-finance"
@@ -26,7 +28,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("%s", err)
 	}
-	fmt.Println(discounts)
+	today := time.Now()
+	outputPath, err := dumpOutput(discounts, today)
+	if err != nil {
+		log.Fatalf("%s", err)
+	}
+	fmt.Println(outputPath)
 }
 
 // getNAVs returns a map of NAVs for each GAMCO common stock.
@@ -117,4 +124,42 @@ func getDiscounts(navs map[string]string, prices map[string]string) ([]Stock, er
 	}
 
 	return discountList, nil
+}
+
+// dumpOutput parses a list of Stocks and an input date, writes them into a
+// temporary HTML file, and returns the path to the temp file.
+func dumpOutput(sl []Stock, date time.Time) (string, error) {
+	if len(sl) == 0 {
+		return "", nil
+	}
+	dateSuffix := date.Format("2006-01-02")
+	path := fmt.Sprintf("/tmp/GAMCO_%s.html", dateSuffix)
+
+	output := fmt.Sprintf(`<html>
+  <h1>Date: %s</h1>
+  <table>
+    <tr>
+      <th>Symbol</th>
+      <th>NAV (USD)</th>
+      <th>Price (USD)</th>
+      <th>Discount (%%)</th>
+    </tr>`, dateSuffix)
+
+	for _, s := range sl {
+		row := fmt.Sprintf(`
+    <tr>
+      <td>%s</td>
+      <td>%s</td>
+      <td>%s</td>
+      <td>%v</td>
+    </tr>`, s.Symbol, s.NAV, s.Price, s.Discount)
+		output += row
+	}
+	output += "\n  </table>\n</html>"
+
+	err := os.WriteFile(path, []byte(output), 0666)
+	if err != nil {
+		return "", err
+	}
+	return path, err
 }
