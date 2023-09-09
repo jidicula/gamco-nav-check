@@ -4,6 +4,7 @@
 *.dll
 *.so
 *.dylib
+gamco-nav-check
 
 # Test binary, built with `go test -c`
 *.test
